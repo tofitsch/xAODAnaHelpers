@@ -473,6 +473,11 @@ namespace xAH {
       std::vector<float> *m_truth_pt;
       std::vector<float> *m_truth_phi;
       std::vector<float> *m_truth_eta;
+      std::vector<float> *m_dR_reco_iso_min;
+      std::vector<float> *m_dR_truth_iso_min;
+      std::vector<int> *m_dR_reco_iso_pass;
+      std::vector<int> *m_dR_truth_iso_pass;
+      std::vector<int> *m_jet_i;
 
 
       // truth detail

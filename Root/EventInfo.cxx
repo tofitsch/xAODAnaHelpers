@@ -61,6 +61,9 @@ void EventInfo::setTree(TTree *tree)
     connectBranch<float>(tree, "actualInteractionsPerCrossing",    &m_actualMu);
     connectBranch<float>(tree, "averageInteractionsPerCrossing",   &m_averageMu);
     connectBranch<float>(tree, "weight_pileup",                    &m_weight_pileup);
+    connectBranch<float>(tree, "weight",                    	   &m_weight);
+    connectBranch<float>(tree, "weight_kfactor",                   &m_weight_kfactor);
+    connectBranch<float>(tree, "weight_xs",                   	   &m_weight_xs);
     connectBranch<float>(tree, "correctedAverageMu",               &m_correctedAvgMu);
     connectBranch<float>(tree, "correctedAndScaledAverageMu",      &m_correctedAndScaledAvgMu);
     connectBranch<float>(tree, "correctedActualMu",                &m_correctedMu);
@@ -163,6 +166,9 @@ void EventInfo::setBranches(TTree *tree)
     tree->Branch("actualInteractionsPerCrossing",  &m_actualMu,  "actualInteractionsPerCrossing/F");
     tree->Branch("averageInteractionsPerCrossing", &m_averageMu, "averageInteractionsPerCrossing/F");
     tree->Branch("weight_pileup",      &m_weight_pileup,  "weight_pileup/F");
+    tree->Branch("weight",      &m_weight,  "weight/F");
+    tree->Branch("weight_kfactor",      &m_weight_kfactor,  "weightk_factor/F");
+    tree->Branch("weight_xs",      &m_weight_xs,  "weight_xs/F");
     tree->Branch("correctedAverageMu",          &m_correctedAvgMu, "correctedAverageMu/F" );
     tree->Branch("correctedAndScaledAverageMu", &m_correctedAndScaledAvgMu, "correctedAndScaledAverageMu/F" );
     tree->Branch("correctedActualMu",           &m_correctedMu, "correctedActualMu/F"     );
@@ -232,6 +238,9 @@ void EventInfo::clear()
   m_DistLastUnpairedBCID = -999;
   m_DistNextUnpairedBCID = -999;
   m_weight_pileup = 1.;
+  m_weight = 1.;
+  m_weight_kfactor = 1.;
+  m_weight_xs = 1.;
   m_weight_pileup_down = 1.;
   m_weight_pileup_up = 1.;
   m_timeStamp = -999;
@@ -359,10 +368,16 @@ void EventInfo::FillEvent( const xAOD::EventInfo* eventInfo, xAOD::TEvent* event
     if ( m_mc ) {
 
       static SG::AuxElement::ConstAccessor< float > weight_pileup ("PileupWeight");
+      static SG::AuxElement::ConstAccessor< float > weight ("weight");
+      static SG::AuxElement::ConstAccessor< float > weight_kfactor ("weight_kfactor");
+      static SG::AuxElement::ConstAccessor< float > weight_xs ("weight_xs");
       static SG::AuxElement::ConstAccessor< unsigned int > rand_run_nr("RandomRunNumber");
       static SG::AuxElement::ConstAccessor< unsigned int > rand_lumiblock_nr("RandomLumiBlockNumber");
 
       if ( weight_pileup.isAvailable( *eventInfo ) )	 { m_weight_pileup = weight_pileup( *eventInfo ); }	    else { m_weight_pileup = 1.0; }
+      if ( weight.isAvailable( *eventInfo ) )	         { m_weight = weight( *eventInfo ); }	                    else { m_weight = 1.0; }
+      if ( weight_kfactor.isAvailable( *eventInfo ) )	 { m_weight_kfactor = weight_kfactor( *eventInfo ); }	    else { m_weight_kfactor = 1.0; }
+      if ( weight_xs.isAvailable( *eventInfo ) )	 { m_weight_xs = weight_xs( *eventInfo ); }	    	    else { m_weight_xs = 1.0; }
       if ( rand_run_nr.isAvailable( *eventInfo ) )	 { m_rand_run_nr = rand_run_nr( *eventInfo ); } 	    else { m_rand_run_nr = 900000; }
       if ( rand_lumiblock_nr.isAvailable( *eventInfo ) ) { m_rand_lumiblock_nr = rand_lumiblock_nr( *eventInfo ); } else { m_rand_lumiblock_nr = 0; }
 

@@ -52,6 +52,9 @@ namespace xAH {
     float    m_mcEventWeight;
     std::vector<float> m_mcEventWeights;
     float    m_weight_pileup;
+    float    m_weight; //XXX
+    float    m_weight_kfactor; //XXX
+    float    m_weight_xs; //XXX
     float    m_weight_pileup_up;
     float    m_weight_pileup_down;
     float    m_correctedAvgMu;

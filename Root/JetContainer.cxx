@@ -406,6 +406,11 @@ JetContainer::JetContainer(const std::string& name, const std::string& detailStr
     m_truth_pt =new std::vector<float>;
     m_truth_phi=new std::vector<float>;
     m_truth_eta=new std::vector<float>;
+    m_dR_reco_iso_min=new std::vector<float>;
+    m_dR_truth_iso_min=new std::vector<float>;
+    m_dR_reco_iso_pass=new std::vector<int>;
+    m_dR_truth_iso_pass=new std::vector<int>;
+    m_jet_i=new std::vector<int>;
   }
 
   // truth detail
@@ -827,6 +832,11 @@ JetContainer::~JetContainer()
     delete m_truth_pt;
     delete m_truth_phi;
     delete m_truth_eta;
+    delete m_dR_reco_iso_min;
+    delete m_dR_truth_iso_min;
+    delete m_dR_reco_iso_pass;
+    delete m_dR_truth_iso_pass;
+    delete m_jet_i;
   }
 
     // truth detail
@@ -1116,6 +1126,11 @@ void JetContainer::setTree(TTree *tree)
       connectBranch<float>(tree,"truth_pt",  &m_truth_pt);
       connectBranch<float>(tree,"truth_phi", &m_truth_phi);
       connectBranch<float>(tree,"truth_eta", &m_truth_eta);
+      connectBranch<float>(tree,"dR_reco_iso_min", &m_dR_reco_iso_min);
+      connectBranch<float>(tree,"dR_truth_iso_min", &m_dR_truth_iso_min);
+      connectBranch<int>(tree,"dR_reco_iso_pass", &m_dR_reco_iso_pass);
+      connectBranch<int>(tree,"dR_truth_iso_pass", &m_dR_truth_iso_pass);
+      connectBranch<int>(tree,"jet_i", &m_jet_i);
     }
 
   // charge
@@ -1471,10 +1486,10 @@ void JetContainer::updateParticle(uint idx, Jet& jet)
       jet.PartonTruthLabelID=m_PartonTruthLabelID->at(idx);
       jet.GhostTruthAssociationFraction= m_GhostTruthAssociationFraction->at(idx);
 
-      jet.truth_p4.SetPtEtaPhiE(m_truth_pt ->at(idx),
-                                m_truth_eta->at(idx),
-                                m_truth_phi->at(idx),
-                                m_truth_E  ->at(idx));
+//      jet.truth_p4.SetPtEtaPhiE(m_truth_pt ->at(idx),
+//                                m_truth_eta->at(idx),
+//                                m_truth_phi->at(idx),
+//                                m_truth_E  ->at(idx));
     }
 
   // charge
@@ -1870,6 +1885,11 @@ void JetContainer::setBranches(TTree *tree)
     setBranch<float>(tree,"truth_pt",  m_truth_pt);
     setBranch<float>(tree,"truth_phi", m_truth_phi);
     setBranch<float>(tree,"truth_eta", m_truth_eta);
+    setBranch<float>(tree,"dR_reco_iso_min", m_dR_reco_iso_min);
+    setBranch<float>(tree,"dR_truth_iso_min", m_dR_truth_iso_min);
+    setBranch<int>(tree,"dR_reco_iso_pass", m_dR_reco_iso_pass);
+    setBranch<int>(tree,"dR_truth_iso_pass", m_dR_truth_iso_pass);
+    setBranch<int>(tree,"i", m_jet_i);
   }
 
 
@@ -2281,6 +2301,11 @@ void JetContainer::clear()
     m_truth_pt ->clear();
     m_truth_phi->clear();
     m_truth_eta->clear();
+    m_dR_reco_iso_min->clear();
+    m_dR_truth_iso_min->clear();
+    m_dR_reco_iso_pass->clear();
+    m_dR_truth_iso_pass->clear();
+    m_jet_i->clear();
   }
 
   // truth_detail
@@ -3386,21 +3411,48 @@ void JetContainer::FillJet( const xAOD::IParticle* particle, const xAOD::Vertex*
     static SG::AuxElement::ConstAccessor<int> partonLabel("PartonTruthLabelID");
     safeFill<int, int, xAOD::Jet>(jet, partonLabel, m_PartonTruthLabelID, -999);
 
-    static SG::AuxElement::ConstAccessor<float> ghostTruthAssFrac("GhostTruthAssociationFraction");
-    safeFill<float, float, xAOD::Jet>(jet, ghostTruthAssFrac, m_GhostTruthAssociationFraction, -999);
+//    static SG::AuxElement::ConstAccessor<float> ghostTruthAssFrac("GhostTruthAssociationFraction");
+//    safeFill<float, float, xAOD::Jet>(jet, ghostTruthAssFrac, m_ghostTrackAssFrac, -999);
 
-    const xAOD::Jet* truthJet = HelperFunctions::getLink<xAOD::Jet>( jet, "GhostTruthAssociationLink" );
-    if(truthJet) {
-      m_truth_pt->push_back ( truthJet->pt() / m_units );
-      m_truth_eta->push_back( truthJet->eta() );
-      m_truth_phi->push_back( truthJet->phi() );
-      m_truth_E->push_back  ( truthJet->e() / m_units );
-    } else {
-      m_truth_pt->push_back ( -999 );
-      m_truth_eta->push_back( -999 );
-      m_truth_phi->push_back( -999 );
-      m_truth_E->push_back  ( -999 );
-    }
+    static SG::AuxElement::ConstAccessor<int> jet_i("jet_i");
+    safeFill<int, int, xAOD::Jet>(jet, jet_i, m_jet_i, -999);
+
+    static SG::AuxElement::ConstAccessor<float> dR_reco_iso_min("dR_reco_iso_min");
+    safeFill<float, float, xAOD::Jet>(jet, dR_reco_iso_min, m_dR_reco_iso_min, -999.);
+
+    static SG::AuxElement::ConstAccessor<float> dR_truth_iso_min("dR_truth_iso_min");
+    safeFill<float, float, xAOD::Jet>(jet, dR_truth_iso_min, m_dR_truth_iso_min, -999.);
+
+    static SG::AuxElement::ConstAccessor<int> dR_reco_iso_pass("dR_reco_iso_pass");
+    safeFill<int, int, xAOD::Jet>(jet, dR_reco_iso_pass, m_dR_reco_iso_pass, -999);
+
+    static SG::AuxElement::ConstAccessor<int> dR_truth_iso_pass("dR_truth_iso_pass");
+    safeFill<int, int, xAOD::Jet>(jet, dR_truth_iso_pass, m_dR_truth_iso_pass, -999);
+
+    static SG::AuxElement::ConstAccessor<float> truth_E("truth_e");
+    safeFill<float, float, xAOD::Jet>(jet, truth_E, m_truth_E, -999.);
+
+    static SG::AuxElement::ConstAccessor<float> truth_pt("truth_pt");
+    safeFill<float, float, xAOD::Jet>(jet, truth_pt, m_truth_pt, -999.);
+
+    static SG::AuxElement::ConstAccessor<float> truth_phi("truth_phi");
+    safeFill<float, float, xAOD::Jet>(jet, truth_phi, m_truth_phi, -999.);
+
+    static SG::AuxElement::ConstAccessor<float> truth_eta("truth_eta");
+    safeFill<float, float, xAOD::Jet>(jet, truth_eta, m_truth_eta, -999.);
+
+//    const xAOD::Jet* truthJet = HelperFunctions::getLink<xAOD::Jet>( jet, "GhostTruthAssociationLink" );
+//    if(truthJet) {
+//      m_truth_pt->push_back ( truthJet->pt() / m_units );
+//      m_truth_eta->push_back( truthJet->eta() );
+//      m_truth_phi->push_back( truthJet->phi() );
+//      m_truth_E->push_back  ( truthJet->e() / m_units );
+//    } else {
+//      m_truth_pt->push_back ( -999 );
+//      m_truth_eta->push_back( -999 );
+//      m_truth_phi->push_back( -999 );
+//      m_truth_E->push_back  ( -999 );
+//    }
 
   }
 
